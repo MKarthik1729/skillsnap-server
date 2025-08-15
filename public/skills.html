@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills Management - SkillsSnap</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .skill-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .skill-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-action {
+            margin: 0 2px;
+        }
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-brain me-2"></i>
+                SkillsSnap
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="skills.html">
+                            <i class="fas fa-tools me-1"></i>Skills
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="topics.html">
+                            <i class="fas fa-book me-1"></i>Topics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="page-data.html">
+                            <i class="fas fa-file-alt me-1"></i>Page Data
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="codes.html">
+                            <i class="fas fa-code me-1"></i>Codes
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1>
+                        <i class="fas fa-tools me-2"></i>
+                        Skills Management
+                    </h1>
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        <i class="fas fa-plus me-1"></i>New Skill
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card search-box">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Search skills by title...">
+                                    <button class="btn btn-light" onclick="searchSkills()">
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <select class="form-select" id="sortSelect" onchange="loadSkills()">
+                                    <option value="created_at">Sort by Date</option>
+                                    <option value="title">Sort by Title</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <select class="form-select" id="limitSelect" onchange="loadSkills()">
+                                    <option value="10">10 per page</option>
+                                    <option value="25">25 per page</option>
+                                    <option value="50">50 per page</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills List -->
+        <div class="row" id="skillsContainer">
+            <!-- Skills will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Skills pagination">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Pagination will be generated here -->
+                    </ul>
+                </nav>
+                <div class="text-center pagination-info" id="paginationInfo">
+                    <!-- Pagination info will be shown here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Skill Modal -->
+    <div class="modal fade" id="skillModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Create New Skill</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="skillForm">
+                        <input type="hidden" id="skillId">
+                        <div class="mb-3">
+                            <label for="skillTitle" class="form-label">Title *</label>
+                            <input type="text" class="form-control" id="skillTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="skillDescription" class="form-label">Description *</label>
+                            <textarea class="form-control" id="skillDescription" rows="4" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSkill()">
+                        <i class="fas fa-save me-1"></i>Save Skill
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this skill?</p>
+                    <p class="text-muted" id="deleteSkillName"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i>Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast for notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notificationToast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong class="me-auto" id="toastTitle">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                <!-- Toast message will be set here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API Base URL
+        const API_BASE = '/api/v1';
+        
+        // Global variables
+        let currentPage = 1;
+        let currentLimit = 10;
+        let currentSearch = '';
+        let currentSort = 'created_at';
+        let skillsToDelete = null;
+
+        // Bootstrap components
+        let skillModal, deleteModal, notificationToast;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            skillModal = new bootstrap.Modal(document.getElementById('skillModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            notificationToast = new bootstrap.Toast(document.getElementById('notificationToast'));
+            
+            loadSkills();
+            
+            // Check if we should open create modal
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'create') {
+                openCreateModal();
+            }
+        });
+
+        // Load skills from API
+        async function loadSkills() {
+            try {
+                showLoading();
+                
+                let url = `${API_BASE}/skills?page=${currentPage}&limit=${currentLimit}`;
+                if (currentSearch) {
+                    url = `${API_BASE}/skills?title=${encodeURIComponent(currentSearch)}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (currentSearch) {
+                        displaySkills(data.data);
+                        hidePagination();
+                    } else {
+                        displaySkills(data.data.skills);
+                        displayPagination(data.data.pagination);
+                    }
+                } else {
+                    showNotification('Error', 'Failed to load skills', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading skills:', error);
+                showNotification('Error', 'Failed to load skills', 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Display skills in the container
+        function displaySkills(skills) {
+            const container = document.getElementById('skillsContainer');
+            
+            if (skills.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No skills found</h4>
+                            <p class="text-muted">Create your first skill to get started!</p>
+                            <button class="btn btn-primary" onclick="openCreateModal()">
+                                <i class="fas fa-plus me-1"></i>Create Skill
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = skills.map(skill => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card skill-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${skill.title}</h5>
+                            <p class="card-text text-muted">${skill.description}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${new Date(skill.created_at).toLocaleDateString()}
+                                </small>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary btn-action" onclick="editSkill('${skill._id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteSkill('${skill._id}', '${skill.title}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display pagination
+        function displayPagination(pagination) {
+            const paginationElement = document.getElementById('pagination');
+            const infoElement = document.getElementById('paginationInfo');
+            
+            if (pagination.total_pages <= 1) {
+                paginationElement.innerHTML = '';
+                infoElement.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${pagination.current_page - 1})">Previous</a>
+                </li>
+            `;
+            
+            // Page numbers
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                if (i === 1 || i === pagination.total_pages || (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) {
+                    paginationHTML += `
+                        <li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                        </li>
+                    `;
+                } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
+                    paginationHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+            }
+            
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === pagination.total_pages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${pagination.current_page + 1})">Next</a>
+                </li>
+            `;
+            
+            paginationElement.innerHTML = paginationHTML;
+            infoElement.innerHTML = `Showing ${((pagination.current_page - 1) * pagination.total_skills / pagination.total_pages) + 1} to ${Math.min(pagination.current_page * pagination.total_skills / pagination.total_pages, pagination.total_skills)} of ${pagination.total_skills} skills`;
+        }
+
+        // Hide pagination
+        function hidePagination() {
+            document.getElementById('pagination').innerHTML = '';
+            document.getElementById('paginationInfo').innerHTML = '';
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            loadSkills();
+        }
+
+        // Search skills
+        function searchSkills() {
+            currentSearch = document.getElementById('searchInput').value.trim();
+            currentPage = 1;
+            loadSkills();
+        }
+
+        // Open create modal
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Create New Skill';
+            document.getElementById('skillForm').reset();
+            document.getElementById('skillId').value = '';
+            skillModal.show();
+        }
+
+        // Edit skill
+        async function editSkill(skillId) {
+            try {
+                const response = await fetch(`${API_BASE}/skills/${skillId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const skill = data.data;
+                    document.getElementById('modalTitle').textContent = 'Edit Skill';
+                    document.getElementById('skillId').value = skill._id;
+                    document.getElementById('skillTitle').value = skill.title;
+                    document.getElementById('skillDescription').value = skill.description;
+                    skillModal.show();
+                } else {
+                    showNotification('Error', 'Failed to load skill details', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading skill:', error);
+                showNotification('Error', 'Failed to load skill details', 'danger');
+            }
+        }
+
+        // Save skill (create or update)
+        async function saveSkill() {
+            const skillId = document.getElementById('skillId').value;
+            const title = document.getElementById('skillTitle').value.trim();
+            const description = document.getElementById('skillDescription').value.trim();
+            
+            if (!title || !description) {
+                showNotification('Error', 'Please fill in all required fields', 'danger');
+                return;
+            }
+            
+            const skillData = { title, description };
+            
+            try {
+                const url = skillId ? `${API_BASE}/skills/${skillId}` : `${API_BASE}/skills`;
+                const method = skillId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(skillData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    skillModal.hide();
+                    showNotification('Success', skillId ? 'Skill updated successfully' : 'Skill created successfully', 'success');
+                    loadSkills();
+                } else {
+                    showNotification('Error', data.message || 'Failed to save skill', 'danger');
+                }
+            } catch (error) {
+                console.error('Error saving skill:', error);
+                showNotification('Error', 'Failed to save skill', 'danger');
+            }
+        }
+
+        // Delete skill
+        function deleteSkill(skillId, skillTitle) {
+            skillsToDelete = { id: skillId, title: skillTitle };
+            document.getElementById('deleteSkillName').textContent = skillTitle;
+            deleteModal.show();
+        }
+
+        // Confirm delete
+        async function confirmDelete() {
+            if (!skillsToDelete) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/skills/${skillsToDelete.id}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    deleteModal.hide();
+                    showNotification('Success', 'Skill deleted successfully', 'success');
+                    loadSkills();
+                } else {
+                    showNotification('Error', data.message || 'Failed to delete skill', 'danger');
+                }
+            } catch (error) {
+                console.error('Error deleting skill:', error);
+                showNotification('Error', 'Failed to delete skill', 'danger');
+            } finally {
+                skillsToDelete = null;
+            }
+        }
+
+        // Show notification
+        function showNotification(title, message, type = 'info') {
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            
+            const toast = document.getElementById('notificationToast');
+            toast.className = `toast ${type === 'success' ? 'bg-success text-white' : type === 'danger' ? 'bg-danger text-white' : ''}`;
+            
+            notificationToast.show();
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('skillsContainer').innerHTML = `
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading skills...</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Hide loading
+        function hideLoading() {
+            // Loading is hidden when skills are displayed
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchSkills();
+            }
+        });
+
+        document.getElementById('limitSelect').addEventListener('change', function() {
+            currentLimit = parseInt(this.value);
+            currentPage = 1;
+            loadSkills();
+        });
+
+        document.getElementById('sortSelect').addEventListener('change', function() {
+            currentSort = this.value;
+            loadSkills();
+        });
+    </script>
+</body>
+</html>

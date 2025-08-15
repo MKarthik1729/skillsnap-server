@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Data Management - SkillsSnap</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .page-data-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .page-data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: white;
+        }
+        .btn-action {
+            margin: 0 2px;
+        }
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .content-preview {
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        .content-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .content-item:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-brain me-2"></i>
+                SkillsSnap
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="skills.html">
+                            <i class="fas fa-tools me-1"></i>Skills
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="topics.html">
+                            <i class="fas fa-book me-1"></i>Topics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="page-data.html">
+                            <i class="fas fa-file-alt me-1"></i>Page Data
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="codes.html">
+                            <i class="fas fa-code me-1"></i>Codes
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1>
+                        <i class="fas fa-file-alt me-2"></i>
+                        Page Data Management
+                    </h1>
+                    <button class="btn btn-warning" onclick="openCreateModal()">
+                        <i class="fas fa-plus me-1"></i>New Page Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card search-box">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Search page data by title...">
+                                    <button class="btn btn-light" onclick="searchPageData()">
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <select class="form-select" id="sortSelect" onchange="loadPageData()">
+                                    <option value="created_at">Sort by Date</option>
+                                    <option value="title">Sort by Title</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <select class="form-select" id="limitSelect" onchange="loadPageData()">
+                                    <option value="10">10 per page</option>
+                                    <option value="25">25 per page</option>
+                                    <option value="50">50 per page</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Data List -->
+        <div class="row" id="pageDataContainer">
+            <!-- Page data will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Page data pagination">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Pagination will be generated here -->
+                    </ul>
+                </nav>
+                <div class="text-center pagination-info" id="paginationInfo">
+                    <!-- Pagination info will be shown here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Page Data Modal -->
+    <div class="modal fade" id="pageDataModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Create New Page Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="pageDataForm">
+                        <input type="hidden" id="pageDataId">
+                        <div class="mb-3">
+                            <label for="pageDataTitle" class="form-label">Title *</label>
+                            <input type="text" class="form-control" id="pageDataTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pageDataDescription" class="form-label">Description *</label>
+                            <textarea class="form-control" id="pageDataDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Content Items</label>
+                            <div id="contentItemsContainer">
+                                <!-- Content items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addContentItem()">
+                                <i class="fas fa-plus me-1"></i>Add Content Item
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="savePageData()">
+                        <i class="fas fa-save me-1"></i>Save Page Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Management Modal -->
+    <div class="modal fade" id="contentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage Content</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newContent" class="form-label">Add New Content</label>
+                        <div class="input-group">
+                            <textarea class="form-control" id="newContent" rows="3" placeholder="Enter new content..."></textarea>
+                            <button class="btn btn-outline-success" type="button" onclick="addContentToPageData()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="existingContentContainer">
+                        <!-- Existing content will be displayed here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add to Topic Modal -->
+    <div class="modal fade" id="addToTopicModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add to Topic</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Select a topic to add this page data to:</p>
+                    <div class="mb-3">
+                        <label for="topicSelect" class="form-label">Topic</label>
+                        <select class="form-select" id="topicSelect" required>
+                            <option value="">Select a topic...</option>
+                        </select>
+                    </div>
+                    <p class="text-muted" id="addToTopicPageDataName"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="confirmAddToTopic()">
+                        <i class="fas fa-plus me-1"></i>Add to Topic
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this page data?</p>
+                    <p class="text-muted" id="deletePageDataName"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i>Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast for notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notificationToast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong class="me-auto" id="toastTitle">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                <!-- Toast message will be set here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API Base URL
+        const API_BASE = '/api/v1';
+        
+        // Global variables
+        let currentPage = 1;
+        let currentLimit = 10;
+        let currentSearch = '';
+        let currentSort = 'created_at';
+        let pageDataToDelete = null;
+        let currentPageDataId = null;
+        let pageDataToAddToTopic = null;
+
+        // Bootstrap components
+        let pageDataModal, contentModal, deleteModal, addToTopicModal, notificationToast;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            pageDataModal = new bootstrap.Modal(document.getElementById('pageDataModal'));
+            contentModal = new bootstrap.Modal(document.getElementById('contentModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            addToTopicModal = new bootstrap.Modal(document.getElementById('addToTopicModal'));
+            notificationToast = new bootstrap.Toast(document.getElementById('notificationToast'));
+            
+            loadPageData();
+            
+            // Check if we should open create modal
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'create') {
+                openCreateModal();
+            }
+        });
+
+        // Load page data from API
+        async function loadPageData() {
+            try {
+                showLoading();
+                
+                let url = `${API_BASE}/page-data?page=${currentPage}&limit=${currentLimit}`;
+                if (currentSearch) {
+                    url = `${API_BASE}/page-data?title=${encodeURIComponent(currentSearch)}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (currentSearch) {
+                        displayPageData(data.data);
+                        hidePagination();
+                    } else {
+                        displayPageData(data.data.page_data);
+                        displayPagination(data.data.pagination);
+                    }
+                } else {
+                    showNotification('Error', 'Failed to load page data', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading page data:', error);
+                showNotification('Error', 'Failed to load page data', 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Display page data in the container
+        function displayPageData(pageDataList) {
+            const container = document.getElementById('pageDataContainer');
+            
+            if (pageDataList.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No page data found</h4>
+                            <p class="text-muted">Create your first page data to get started!</p>
+                            <button class="btn btn-warning" onclick="openCreateModal()">
+                                <i class="fas fa-plus me-1"></i>Create Page Data
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = pageDataList.map(pageData => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card page-data-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${pageData.title}</h5>
+                            <p class="card-text text-muted">${pageData.description}</p>
+                            
+                            <div class="mb-3">
+                                <span class="badge bg-info">
+                                    <i class="fas fa-list me-1"></i>${pageData.content ? pageData.content.length : 0} items
+                                </span>
+                            </div>
+                            
+                            ${pageData.content && pageData.content.length > 0 ? `
+                                <div class="content-preview mb-3">
+                                    <small class="text-muted">Content preview:</small>
+                                    <div class="content-item">
+                                        ${pageData.content[0].substring(0, 100)}${pageData.content[0].length > 100 ? '...' : ''}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${new Date(pageData.created_at).toLocaleDateString()}
+                                </small>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-warning btn-action" onclick="editPageData('${pageData._id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info btn-action" onclick="manageContent('${pageData._id}')">
+                                        <i class="fas fa-list"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success btn-action" onclick="addToTopic('${pageData._id}', '${pageData.title}')">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="deletePageData('${pageData._id}', '${pageData.title}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display pagination
+        function displayPagination(pagination) {
+            const paginationElement = document.getElementById('pagination');
+            const infoElement = document.getElementById('paginationInfo');
+            
+            if (pagination.total_pages <= 1) {
+                paginationElement.innerHTML = '';
+                infoElement.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${pagination.current_page - 1})">Previous</a>
+                </li>
+            `;
+            
+            // Page numbers
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                if (i === 1 || i === pagination.total_pages || (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) {
+                    paginationHTML += `
+                        <li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                        </li>
+                    `;
+                } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
+                    paginationHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+            }
+            
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === pagination.total_pages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${pagination.current_page + 1})">Next</a>
+                </li>
+            `;
+            
+            paginationElement.innerHTML = paginationHTML;
+            infoElement.innerHTML = `Showing ${((pagination.current_page - 1) * pagination.total_page_data / pagination.total_pages) + 1} to ${Math.min(pagination.current_page * pagination.total_page_data / pagination.total_pages, pagination.total_page_data)} of ${pagination.total_page_data} page data`;
+        }
+
+        // Hide pagination
+        function hidePagination() {
+            document.getElementById('pagination').innerHTML = '';
+            document.getElementById('paginationInfo').innerHTML = '';
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            loadPageData();
+        }
+
+        // Search page data
+        function searchPageData() {
+            currentSearch = document.getElementById('searchInput').value.trim();
+            currentPage = 1;
+            loadPageData();
+        }
+
+        // Open create modal
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Create New Page Data';
+            document.getElementById('pageDataForm').reset();
+            document.getElementById('pageDataId').value = '';
+            document.getElementById('contentItemsContainer').innerHTML = '';
+            addContentItem(); // Add one initial content item
+            pageDataModal.show();
+        }
+
+        // Add content item to form
+        function addContentItem(content = '') {
+            const container = document.getElementById('contentItemsContainer');
+            const itemId = Date.now();
+            const itemHTML = `
+                <div class="content-item mb-2" id="content-item-${itemId}">
+                    <div class="input-group">
+                        <textarea class="form-control" rows="2" placeholder="Enter content..." onchange="updateContentItem(${itemId}, this.value)">${content}</textarea>
+                        <button class="btn btn-outline-danger" type="button" onclick="removeContentItem(${itemId})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', itemHTML);
+        }
+
+        // Remove content item from form
+        function removeContentItem(itemId) {
+            const item = document.getElementById(`content-item-${itemId}`);
+            if (item) {
+                item.remove();
+            }
+        }
+
+        // Update content item
+        function updateContentItem(itemId, value) {
+            // This function can be used to track changes if needed
+        }
+
+        // Get all content items from form
+        function getContentItems() {
+            const textareas = document.querySelectorAll('#contentItemsContainer textarea');
+            return Array.from(textareas).map(textarea => textarea.value.trim()).filter(content => content !== '');
+        }
+
+        // Edit page data
+        async function editPageData(pageDataId) {
+            try {
+                const response = await fetch(`${API_BASE}/page-data/${pageDataId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const pageData = data.data;
+                    document.getElementById('modalTitle').textContent = 'Edit Page Data';
+                    document.getElementById('pageDataId').value = pageData._id;
+                    document.getElementById('pageDataTitle').value = pageData.title;
+                    document.getElementById('pageDataDescription').value = pageData.description;
+                    
+                    // Clear and populate content items
+                    document.getElementById('contentItemsContainer').innerHTML = '';
+                    if (pageData.content && pageData.content.length > 0) {
+                        pageData.content.forEach(content => {
+                            addContentItem(content);
+                        });
+                    } else {
+                        addContentItem(); // Add one empty item
+                    }
+                    
+                    pageDataModal.show();
+                } else {
+                    showNotification('Error', 'Failed to load page data details', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading page data:', error);
+                showNotification('Error', 'Failed to load page data details', 'danger');
+            }
+        }
+
+        // Save page data (create or update)
+        async function savePageData() {
+            const pageDataId = document.getElementById('pageDataId').value;
+            const title = document.getElementById('pageDataTitle').value.trim();
+            const description = document.getElementById('pageDataDescription').value.trim();
+            const content = getContentItems();
+            
+            if (!title || !description) {
+                showNotification('Error', 'Please fill in all required fields', 'danger');
+                return;
+            }
+            
+            const pageData = { title, description, content };
+            
+            try {
+                const url = pageDataId ? `${API_BASE}/page-data/${pageDataId}` : `${API_BASE}/page-data`;
+                const method = pageDataId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pageData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    pageDataModal.hide();
+                    showNotification('Success', pageDataId ? 'Page data updated successfully' : 'Page data created successfully', 'success');
+                    loadPageData();
+                } else {
+                    showNotification('Error', data.message || 'Failed to save page data', 'danger');
+                }
+            } catch (error) {
+                console.error('Error saving page data:', error);
+                showNotification('Error', 'Failed to save page data', 'danger');
+            }
+        }
+
+        // Manage content
+        async function manageContent(pageDataId) {
+            currentPageDataId = pageDataId;
+            try {
+                const response = await fetch(`${API_BASE}/page-data/${pageDataId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayExistingContent(data.data.content || []);
+                    contentModal.show();
+                } else {
+                    showNotification('Error', 'Failed to load page data content', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading page data content:', error);
+                showNotification('Error', 'Failed to load page data content', 'danger');
+            }
+        }
+
+        // Display existing content
+        function displayExistingContent(content) {
+            const container = document.getElementById('existingContentContainer');
+            
+            if (content.length === 0) {
+                container.innerHTML = '<p class="text-muted">No content items found.</p>';
+                return;
+            }
+            
+            container.innerHTML = content.map((item, index) => `
+                <div class="content-item mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1 me-2">
+                            <small class="text-muted">Item ${index + 1}:</small>
+                            <div class="mt-1">${item}</div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeContentItemFromPageData(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add content to page data
+        async function addContentToPageData() {
+            const newContent = document.getElementById('newContent').value.trim();
+            
+            if (!newContent) {
+                showNotification('Error', 'Please enter content', 'danger');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/page-data/${currentPageDataId}/content`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: newContent })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('newContent').value = '';
+                    // Reload the content display
+                    const pageDataResponse = await fetch(`${API_BASE}/page-data/${currentPageDataId}`);
+                    const pageDataData = await pageDataResponse.json();
+                    if (pageDataData.success) {
+                        displayExistingContent(pageDataData.data.content || []);
+                    }
+                    showNotification('Success', 'Content added successfully', 'success');
+                } else {
+                    showNotification('Error', data.message || 'Failed to add content', 'danger');
+                }
+            } catch (error) {
+                console.error('Error adding content:', error);
+                showNotification('Error', 'Failed to add content', 'danger');
+            }
+        }
+
+        // Remove content item from page data
+        async function removeContentItemFromPageData(index) {
+            try {
+                const response = await fetch(`${API_BASE}/page-data/${currentPageDataId}/content/${index}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload the content display
+                    const pageDataResponse = await fetch(`${API_BASE}/page-data/${currentPageDataId}`);
+                    const pageDataData = await pageDataResponse.json();
+                    if (pageDataData.success) {
+                        displayExistingContent(pageDataData.data.content || []);
+                    }
+                    showNotification('Success', 'Content item removed successfully', 'success');
+                } else {
+                    showNotification('Error', data.message || 'Failed to remove content item', 'danger');
+                }
+            } catch (error) {
+                console.error('Error removing content item:', error);
+                showNotification('Error', 'Failed to remove content item', 'danger');
+            }
+        }
+
+        // Add to topic
+        async function addToTopic(pageDataId, pageDataTitle) {
+            pageDataToAddToTopic = { id: pageDataId, title: pageDataTitle };
+            document.getElementById('addToTopicPageDataName').textContent = pageDataTitle;
+            
+            try {
+                // Load topics for dropdown
+                const response = await fetch(`${API_BASE}/topics`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const topicSelect = document.getElementById('topicSelect');
+                    topicSelect.innerHTML = '<option value="">Select a topic...</option>';
+                    
+                    data.data.forEach(topic => {
+                        topicSelect.innerHTML += `<option value="${topic._id}">${topic.name}</option>`;
+                    });
+                    
+                    addToTopicModal.show();
+                } else {
+                    showNotification('Error', 'Failed to load topics', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading topics:', error);
+                showNotification('Error', 'Failed to load topics', 'danger');
+            }
+        }
+
+        // Confirm add to topic
+        async function confirmAddToTopic() {
+            if (!pageDataToAddToTopic) return;
+            
+            const topicId = document.getElementById('topicSelect').value;
+            if (!topicId) {
+                showNotification('Error', 'Please select a topic', 'danger');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/topics/${topicId}/page-data/${pageDataToAddToTopic.id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addToTopicModal.hide();
+                    showNotification('Success', 'Page data added to topic successfully', 'success');
+                } else {
+                    showNotification('Error', data.message || 'Failed to add page data to topic', 'danger');
+                }
+            } catch (error) {
+                console.error('Error adding page data to topic:', error);
+                showNotification('Error', 'Failed to add page data to topic', 'danger');
+            } finally {
+                pageDataToAddToTopic = null;
+            }
+        }
+
+        // Delete page data
+        function deletePageData(pageDataId, pageDataTitle) {
+            pageDataToDelete = { id: pageDataId, title: pageDataTitle };
+            document.getElementById('deletePageDataName').textContent = pageDataTitle;
+            deleteModal.show();
+        }
+
+        // Confirm delete
+        async function confirmDelete() {
+            if (!pageDataToDelete) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/page-data/${pageDataToDelete.id}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    deleteModal.hide();
+                    showNotification('Success', 'Page data deleted successfully', 'success');
+                    loadPageData();
+                } else {
+                    showNotification('Error', data.message || 'Failed to delete page data', 'danger');
+                }
+            } catch (error) {
+                console.error('Error deleting page data:', error);
+                showNotification('Error', 'Failed to delete page data', 'danger');
+            } finally {
+                pageDataToDelete = null;
+            }
+        }
+
+        // Show notification
+        function showNotification(title, message, type = 'info') {
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            
+            const toast = document.getElementById('notificationToast');
+            toast.className = `toast ${type === 'success' ? 'bg-success text-white' : type === 'danger' ? 'bg-danger text-white' : ''}`;
+            
+            notificationToast.show();
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('pageDataContainer').innerHTML = `
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading page data...</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Hide loading
+        function hideLoading() {
+            // Loading is hidden when page data is displayed
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPageData();
+            }
+        });
+
+        document.getElementById('limitSelect').addEventListener('change', function() {
+            currentLimit = parseInt(this.value);
+            currentPage = 1;
+            loadPageData();
+        });
+
+        document.getElementById('sortSelect').addEventListener('change', function() {
+            currentSort = this.value;
+            loadPageData();
+        });
+    </script>
+</body>
+</html>

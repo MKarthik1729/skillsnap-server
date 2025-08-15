@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topics Management - SkillsSnap</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .topic-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .topic-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn-action {
+            margin: 0 2px;
+        }
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .skill-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .content-preview {
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-brain me-2"></i>
+                SkillsSnap
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="skills.html">
+                            <i class="fas fa-tools me-1"></i>Skills
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="topics.html">
+                            <i class="fas fa-book me-1"></i>Topics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="page-data.html">
+                            <i class="fas fa-file-alt me-1"></i>Page Data
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="codes.html">
+                            <i class="fas fa-code me-1"></i>Codes
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1>
+                        <i class="fas fa-book me-2"></i>
+                        Topics Management
+                    </h1>
+                    <div>
+                        <button class="btn btn-outline-success me-2" onclick="openCreateModal()">
+                            <i class="fas fa-plus me-1"></i>New Topic
+                        </button>
+                        <button class="btn btn-success" onclick="openCreateWithSkillModal()">
+                            <i class="fas fa-link me-1"></i>Add to Skill
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card search-box">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Search topics by name...">
+                                    <button class="btn btn-light" onclick="searchTopics()">
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <select class="form-select" id="skillFilter" onchange="loadTopics()">
+                                    <option value="">All Skills</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <select class="form-select" id="sortSelect" onchange="loadTopics()">
+                                    <option value="created_at">Sort by Date</option>
+                                    <option value="name">Sort by Name</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <select class="form-select" id="limitSelect" onchange="loadTopics()">
+                                    <option value="10">10 per page</option>
+                                    <option value="25">25 per page</option>
+                                    <option value="50">50 per page</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Topics List -->
+        <div class="row" id="topicsContainer">
+            <!-- Topics will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Topics pagination">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Pagination will be generated here -->
+                    </ul>
+                </nav>
+                <div class="text-center pagination-info" id="paginationInfo">
+                    <!-- Pagination info will be shown here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Topic Modal -->
+    <div class="modal fade" id="topicModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Create New Topic</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="topicForm">
+                        <input type="hidden" id="topicId">
+                        <div class="mb-3">
+                            <label for="topicName" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="topicName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="topicDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="topicDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="saveTopic()">
+                        <i class="fas fa-save me-1"></i>Save Topic
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Topic with Skill Modal -->
+    <div class="modal fade" id="topicWithSkillModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Topic and Add to Skill</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="topicWithSkillForm">
+                        <div class="mb-3">
+                            <label for="skillSelect" class="form-label">Select Skill *</label>
+                            <select class="form-select" id="skillSelect" required>
+                                <option value="">Choose a skill...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="topicNameWithSkill" class="form-label">Topic Name *</label>
+                            <input type="text" class="form-control" id="topicNameWithSkill" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="topicDescriptionWithSkill" class="form-label">Description</label>
+                            <textarea class="form-control" id="topicDescriptionWithSkill" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="saveTopicWithSkill()">
+                        <i class="fas fa-save me-1"></i>Create & Add to Skill
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this topic?</p>
+                    <p class="text-muted" id="deleteTopicName"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i>Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast for notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notificationToast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong class="me-auto" id="toastTitle">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                <!-- Toast message will be set here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API Base URL
+        const API_BASE = '/api/v1';
+        
+        // Global variables
+        let currentPage = 1;
+        let currentLimit = 10;
+        let currentSearch = '';
+        let currentSort = 'created_at';
+        let currentSkillFilter = '';
+        let topicsToDelete = null;
+        let skills = [];
+
+        // Bootstrap components
+        let topicModal, topicWithSkillModal, deleteModal, notificationToast;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            topicModal = new bootstrap.Modal(document.getElementById('topicModal'));
+            topicWithSkillModal = new bootstrap.Modal(document.getElementById('topicWithSkillModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            notificationToast = new bootstrap.Toast(document.getElementById('notificationToast'));
+            
+            loadSkills();
+            loadTopics();
+            
+            // Check if we should open create modal
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'create') {
+                openCreateModal();
+            }
+        });
+
+        // Load skills for filter dropdown
+        async function loadSkills() {
+            try {
+                const response = await fetch(`${API_BASE}/skills`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.success) {
+                    skills = data.data;
+                    const skillFilter = document.getElementById('skillFilter');
+                    const skillSelect = document.getElementById('skillSelect');
+                    
+                    // Populate filter dropdown
+                    skillFilter.innerHTML = '<option value="">All Skills</option>';
+                    skills.forEach(skill => {
+                        skillFilter.innerHTML += `<option value="${skill._id}">${skill.title}</option>`;
+                    });
+                    
+                    // Populate skill select for create with skill modal
+                    skillSelect.innerHTML = '<option value="">Choose a skill...</option>';
+                    skills.forEach(skill => {
+                        skillSelect.innerHTML += `<option value="${skill._id}">${skill.title}</option>`;
+                    });
+                } else {
+                    showNotification('Error', 'Failed to load skills', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading skills:', error);
+                showNotification('Error', 'Failed to load skills. Please check your connection.', 'danger');
+            }
+        }
+
+        // Load topics from API
+        async function loadTopics() {
+            try {
+                showLoading();
+                
+                let url = `${API_BASE}/topics?page=${currentPage}&limit=${currentLimit}`;
+                if (currentSearch) {
+                    url = `${API_BASE}/topics?name=${encodeURIComponent(currentSearch)}`;
+                } else if (currentSkillFilter) {
+                    url = `${API_BASE}/topics/skill/${currentSkillFilter}`;
+                }
+                
+                console.log('Fetching topics from:', url);
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('HTTP Error Response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Topics API response:', data);
+                
+                if (data.success) {
+                    if (currentSearch || currentSkillFilter) {
+                        displayTopics(data.data);
+                        hidePagination();
+                    } else {
+                        displayTopics(data.data.topics);
+                        displayPagination(data.data.pagination);
+                    }
+                } else {
+                    console.error('API returned error:', data);
+                    showNotification('Error', data.message || 'Failed to load topics', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading topics:', error);
+                let errorMessage = 'Failed to load topics. ';
+                
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage += 'Please check if the server is running.';
+                } else if (error.message.includes('HTTP error! status: 500')) {
+                    errorMessage += 'Server error. Please check the backend logs.';
+                } else if (error.message.includes('HTTP error! status: 404')) {
+                    errorMessage += 'API endpoint not found.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showNotification('Error', errorMessage, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Display topics in the container
+        function displayTopics(topics) {
+            const container = document.getElementById('topicsContainer');
+            
+            if (topics.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No topics found</h4>
+                            <p class="text-muted">Create your first topic to get started!</p>
+                            <button class="btn btn-success" onclick="openCreateModal()">
+                                <i class="fas fa-plus me-1"></i>Create Topic
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = topics.map(topic => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card topic-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${topic.name}</h5>
+                            <p class="card-text text-muted">${topic.description || 'No description'}</p>
+                            
+                            <div class="mb-3">
+                                <span class="badge skill-badge me-1">
+                                    <i class="fas fa-tools me-1"></i>${getSkillName(topic.skill_id) || 'Standalone'}
+                                </span>
+                                <span class="badge bg-info me-1">
+                                    <i class="fas fa-file-alt me-1"></i>${topic.page_data ? topic.page_data.length : 0}
+                                </span>
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-code me-1"></i>${topic.codes ? topic.codes.length : 0}
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${new Date(topic.created_at).toLocaleDateString()}
+                                </small>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-success btn-action" onclick="editTopic('${topic._id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info btn-action" onclick="manageContent('${topic._id}')">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteTopic('${topic._id}', '${topic.name}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get skill name by ID
+        function getSkillName(skillId) {
+            if (!skillId) return null;
+            const skill = skills.find(s => s._id === skillId);
+            return skill ? skill.title : 'Unknown Skill';
+        }
+
+        // Display pagination
+        function displayPagination(pagination) {
+            const paginationElement = document.getElementById('pagination');
+            const infoElement = document.getElementById('paginationInfo');
+            
+            if (pagination.total_pages <= 1) {
+                paginationElement.innerHTML = '';
+                infoElement.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${pagination.current_page - 1})">Previous</a>
+                </li>
+            `;
+            
+            // Page numbers
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                if (i === 1 || i === pagination.total_pages || (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) {
+                    paginationHTML += `
+                        <li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                        </li>
+                    `;
+                } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
+                    paginationHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+            }
+            
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === pagination.total_pages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${pagination.current_page + 1})">Next</a>
+                </li>
+            `;
+            
+            paginationElement.innerHTML = paginationHTML;
+            infoElement.innerHTML = `Showing ${((pagination.current_page - 1) * pagination.total_topics / pagination.total_pages) + 1} to ${Math.min(pagination.current_page * pagination.total_topics / pagination.total_pages, pagination.total_topics)} of ${pagination.total_topics} topics`;
+        }
+
+        // Hide pagination
+        function hidePagination() {
+            document.getElementById('pagination').innerHTML = '';
+            document.getElementById('paginationInfo').innerHTML = '';
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            loadTopics();
+        }
+
+        // Search topics
+        function searchTopics() {
+            currentSearch = document.getElementById('searchInput').value.trim();
+            currentPage = 1;
+            loadTopics();
+        }
+
+        // Open create modal
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Create New Topic';
+            document.getElementById('topicForm').reset();
+            document.getElementById('topicId').value = '';
+            topicModal.show();
+        }
+
+        // Open create with skill modal
+        function openCreateWithSkillModal() {
+            document.getElementById('topicWithSkillForm').reset();
+            topicWithSkillModal.show();
+        }
+
+        // Edit topic
+        async function editTopic(topicId) {
+            try {
+                const response = await fetch(`${API_BASE}/topics/${topicId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const topic = data.data;
+                    document.getElementById('modalTitle').textContent = 'Edit Topic';
+                    document.getElementById('topicId').value = topic._id;
+                    document.getElementById('topicName').value = topic.name;
+                    document.getElementById('topicDescription').value = topic.description || '';
+                    topicModal.show();
+                } else {
+                    showNotification('Error', 'Failed to load topic details', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading topic:', error);
+                showNotification('Error', 'Failed to load topic details', 'danger');
+            }
+        }
+
+        // Save topic (create or update)
+        async function saveTopic() {
+            const topicId = document.getElementById('topicId').value;
+            const name = document.getElementById('topicName').value.trim();
+            const description = document.getElementById('topicDescription').value.trim();
+            
+            if (!name) {
+                showNotification('Error', 'Please fill in the topic name', 'danger');
+                return;
+            }
+            
+            const topicData = { name, description };
+            
+            try {
+                const url = topicId ? `${API_BASE}/topics/${topicId}` : `${API_BASE}/topics`;
+                const method = topicId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(topicData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    topicModal.hide();
+                    showNotification('Success', topicId ? 'Topic updated successfully' : 'Topic created successfully', 'success');
+                    loadTopics();
+                } else {
+                    showNotification('Error', data.message || 'Failed to save topic', 'danger');
+                }
+            } catch (error) {
+                console.error('Error saving topic:', error);
+                showNotification('Error', 'Failed to save topic', 'danger');
+            }
+        }
+
+        // Save topic with skill
+        async function saveTopicWithSkill() {
+            const skillId = document.getElementById('skillSelect').value;
+            const name = document.getElementById('topicNameWithSkill').value.trim();
+            const description = document.getElementById('topicDescriptionWithSkill').value.trim();
+            
+            if (!skillId || !name) {
+                showNotification('Error', 'Please select a skill and fill in the topic name', 'danger');
+                return;
+            }
+            
+            const topicData = { name, description };
+            
+            try {
+                const response = await fetch(`${API_BASE}/topics/skill/${skillId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(topicData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    topicWithSkillModal.hide();
+                    showNotification('Success', 'Topic created and added to skill successfully', 'success');
+                    loadTopics();
+                } else {
+                    showNotification('Error', data.message || 'Failed to create topic', 'danger');
+                }
+            } catch (error) {
+                console.error('Error creating topic with skill:', error);
+                showNotification('Error', 'Failed to create topic', 'danger');
+            }
+        }
+
+        // Manage content (placeholder for future implementation)
+        function manageContent(topicId) {
+            showNotification('Info', 'Content management feature coming soon!', 'info');
+        }
+
+        // Delete topic
+        function deleteTopic(topicId, topicName) {
+            topicsToDelete = { id: topicId, name: topicName };
+            document.getElementById('deleteTopicName').textContent = topicName;
+            deleteModal.show();
+        }
+
+        // Confirm delete
+        async function confirmDelete() {
+            if (!topicsToDelete) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/topics/${topicsToDelete.id}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    deleteModal.hide();
+                    showNotification('Success', 'Topic deleted successfully', 'success');
+                    loadTopics();
+                } else {
+                    showNotification('Error', data.message || 'Failed to delete topic', 'danger');
+                }
+            } catch (error) {
+                console.error('Error deleting topic:', error);
+                showNotification('Error', 'Failed to delete topic', 'danger');
+            } finally {
+                topicsToDelete = null;
+            }
+        }
+
+        // Show notification
+        function showNotification(title, message, type = 'info') {
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            
+            const toast = document.getElementById('notificationToast');
+            toast.className = `toast ${type === 'success' ? 'bg-success text-white' : type === 'danger' ? 'bg-danger text-white' : ''}`;
+            
+            notificationToast.show();
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('topicsContainer').innerHTML = `
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading topics...</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Hide loading
+        function hideLoading() {
+            // Loading is hidden when topics are displayed
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchTopics();
+            }
+        });
+
+        document.getElementById('limitSelect').addEventListener('change', function() {
+            currentLimit = parseInt(this.value);
+            currentPage = 1;
+            loadTopics();
+        });
+
+        document.getElementById('sortSelect').addEventListener('change', function() {
+            currentSort = this.value;
+            loadTopics();
+        });
+
+        document.getElementById('skillFilter').addEventListener('change', function() {
+            currentSkillFilter = this.value;
+            currentPage = 1;
+            loadTopics();
+        });
+    </script>
+</body>
+</html>
