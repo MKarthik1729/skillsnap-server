@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Code = require('../schemas/code_schema');
-const Topic = require('../schemas/topic_schema');
 
 // Create a new code
 const create_code = async (code_data) => {
@@ -294,36 +293,6 @@ const get_all_languages = async () => {
   }
 };
 
-// Get codes by topic ID
-const get_codes_by_topic = async (topic_id) => {
-  try {
-    const topic = await Topic.findOne({ _id: topic_id, deleted_at: null });
-    if (!topic) {
-      return {
-        success: false,
-        message: 'Topic not found'
-      };
-    }
-    
-    const codes_list = await Code.find({
-      _id: { $in: topic.codes },
-      deleted_at: null
-    }).sort({ created_at: -1 });
-    
-    return {
-      success: true,
-      data: codes_list,
-      message: 'Codes for topic retrieved successfully'
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.message,
-      message: 'Failed to retrieve codes for topic'
-    };
-  }
-};
-
 module.exports = {
   create_code,
   get_all_codes,
@@ -336,6 +305,5 @@ module.exports = {
   get_codes_with_pagination,
   restore_code,
   get_deleted_codes,
-  get_all_languages,
-  get_codes_by_topic
+  get_all_languages
 };
