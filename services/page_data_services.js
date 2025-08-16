@@ -323,6 +323,41 @@ const remove_content_from_page_data = async (page_data_id, content_index) => {
   }
 };
 
+// Get page data by topic ID
+const get_page_data_by_topic_id = async (topic_id) => {
+  try {
+    const Topic = require('../schemas/topic_schema');
+    
+    // First, find the topic to get its page_data array
+    const topic = await Topic.findOne({ _id: topic_id, deleted_at: null });
+    
+    if (!topic) {
+      return {
+        success: false,
+        message: 'Topic not found'
+      };
+    }
+    
+    // Get all page data that are referenced in the topic's page_data array
+    const page_data_list = await PageData.find({
+      _id: { $in: topic.page_data },
+      deleted_at: null
+    }).sort({ created_at: -1 });
+    
+    return {
+      success: true,
+      data: page_data_list,
+      message: 'Page data for topic retrieved successfully'
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message,
+      message: 'Failed to retrieve page data for topic'
+    };
+  }
+};
+
 module.exports = {
   create_page_data,
   get_all_page_data,
@@ -335,5 +370,6 @@ module.exports = {
   restore_page_data,
   get_deleted_page_data,
   add_content_to_page_data,
-  remove_content_from_page_data
+  remove_content_from_page_data,
+  get_page_data_by_topic_id
 };

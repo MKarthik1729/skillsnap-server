@@ -182,6 +182,26 @@ router.patch('/:code_id/restore', async (req, res) => {
   }
 });
 
+// Get codes by topic ID
+router.get('/topic/:topic_id', async (req, res) => {
+  try {
+    const { topic_id } = req.params;
+    const result = await code_services.get_codes_by_topic_id(topic_id);
+    
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(404).json(result);
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      message: 'Internal server error'
+    });
+  }
+});
+
 
 
 // Update code content only

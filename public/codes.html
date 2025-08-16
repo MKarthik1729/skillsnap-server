@@ -364,7 +364,7 @@
         // Load languages for filter dropdown
         async function loadLanguages() {
             try {
-                const response = await fetch(`${API_BASE}/codes/languages/all`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/codes/languages/all`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -394,7 +394,7 @@
                     url = `${API_BASE}/codes?language=${encodeURIComponent(currentLanguageFilter)}`;
                 }
                 
-                const response = await fetch(url);
+                const response = await authManager.authenticatedFetch(url);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -575,7 +575,7 @@
         // Show language statistics
         async function showLanguageStats() {
             try {
-                const response = await fetch(`${API_BASE}/codes/languages/all`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/codes/languages/all`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -627,7 +627,7 @@
         // Edit code
         async function editCode(codeId) {
             try {
-                const response = await fetch(`${API_BASE}/codes/${codeId}`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/codes/${codeId}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -650,7 +650,7 @@
         // View code (full view)
         async function viewCode(codeId) {
             try {
-                const response = await fetch(`${API_BASE}/codes/${codeId}`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/codes/${codeId}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -694,11 +694,8 @@
                 const url = codeId ? `${API_BASE}/codes/${codeId}` : `${API_BASE}/codes`;
                 const method = codeId ? 'PUT' : 'POST';
                 
-                const response = await fetch(url, {
+                const response = await authManager.authenticatedFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(codeData)
                 });
                 
@@ -724,7 +721,7 @@
             
             try {
                 // Load topics for dropdown
-                const response = await fetch(`${API_BASE}/topics`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/topics`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -756,11 +753,8 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/topics/${topicId}/codes/${codesToAddToTopic.id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                const response = await authManager.authenticatedFetch(`${API_BASE}/topics/${topicId}/codes/${codesToAddToTopic.id}`, {
+                    method: 'POST'
                 });
                 
                 const data = await response.json();
@@ -791,7 +785,7 @@
             if (!codesToDelete) return;
             
             try {
-                const response = await fetch(`${API_BASE}/codes/${codesToDelete.id}`, {
+                const response = await authManager.authenticatedFetch(`${API_BASE}/codes/${codesToDelete.id}`, {
                     method: 'DELETE'
                 });
                 

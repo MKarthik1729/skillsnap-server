@@ -540,7 +540,7 @@
         // Edit page data
         async function editPageData(pageDataId) {
             try {
-                const response = await fetch(`${API_BASE}/page-data/${pageDataId}`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/page-data/${pageDataId}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -588,11 +588,8 @@
                 const url = pageDataId ? `${API_BASE}/page-data/${pageDataId}` : `${API_BASE}/page-data`;
                 const method = pageDataId ? 'PUT' : 'POST';
                 
-                const response = await fetch(url, {
+                const response = await authManager.authenticatedFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(pageData)
                 });
                 
@@ -615,7 +612,7 @@
         async function manageContent(pageDataId) {
             currentPageDataId = pageDataId;
             try {
-                const response = await fetch(`${API_BASE}/page-data/${pageDataId}`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/page-data/${pageDataId}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -664,11 +661,8 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/page-data/${currentPageDataId}/content`, {
+                const response = await authManager.authenticatedFetch(`${API_BASE}/page-data/${currentPageDataId}/content`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ content: newContent })
                 });
                 
@@ -677,7 +671,7 @@
                 if (data.success) {
                     document.getElementById('newContent').value = '';
                     // Reload the content display
-                    const pageDataResponse = await fetch(`${API_BASE}/page-data/${currentPageDataId}`);
+                    const pageDataResponse = await authManager.authenticatedFetch(`${API_BASE}/page-data/${currentPageDataId}`);
                     const pageDataData = await pageDataResponse.json();
                     if (pageDataData.success) {
                         displayExistingContent(pageDataData.data.content || []);
@@ -695,7 +689,7 @@
         // Remove content item from page data
         async function removeContentItemFromPageData(index) {
             try {
-                const response = await fetch(`${API_BASE}/page-data/${currentPageDataId}/content/${index}`, {
+                const response = await authManager.authenticatedFetch(`${API_BASE}/page-data/${currentPageDataId}/content/${index}`, {
                     method: 'DELETE'
                 });
                 
@@ -703,7 +697,7 @@
                 
                 if (data.success) {
                     // Reload the content display
-                    const pageDataResponse = await fetch(`${API_BASE}/page-data/${currentPageDataId}`);
+                    const pageDataResponse = await authManager.authenticatedFetch(`${API_BASE}/page-data/${currentPageDataId}`);
                     const pageDataData = await pageDataResponse.json();
                     if (pageDataData.success) {
                         displayExistingContent(pageDataData.data.content || []);
@@ -725,7 +719,7 @@
             
             try {
                 // Load topics for dropdown
-                const response = await fetch(`${API_BASE}/topics`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/topics`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -757,11 +751,8 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/topics/${topicId}/page-data/${pageDataToAddToTopic.id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                const response = await authManager.authenticatedFetch(`${API_BASE}/topics/${topicId}/page-data/${pageDataToAddToTopic.id}`, {
+                    method: 'POST'
                 });
                 
                 const data = await response.json();
@@ -792,7 +783,7 @@
             if (!pageDataToDelete) return;
             
             try {
-                const response = await fetch(`${API_BASE}/page-data/${pageDataToDelete.id}`, {
+                const response = await authManager.authenticatedFetch(`${API_BASE}/page-data/${pageDataToDelete.id}`, {
                     method: 'DELETE'
                 });
                 

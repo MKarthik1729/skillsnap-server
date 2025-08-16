@@ -302,7 +302,7 @@
         // Load skills for filter dropdown
         async function loadSkills() {
             try {
-                const response = await fetch(`${API_BASE}/skills`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/skills`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -346,7 +346,7 @@
                 }
                 
                 console.log('Fetching topics from:', url);
-                const response = await fetch(url);
+                const response = await authManager.authenticatedFetch(url);
                 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -538,7 +538,7 @@
         // Edit topic
         async function editTopic(topicId) {
             try {
-                const response = await fetch(`${API_BASE}/topics/${topicId}`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/topics/${topicId}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -574,11 +574,8 @@
                 const url = topicId ? `${API_BASE}/topics/${topicId}` : `${API_BASE}/topics`;
                 const method = topicId ? 'PUT' : 'POST';
                 
-                const response = await fetch(url, {
+                const response = await authManager.authenticatedFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(topicData)
                 });
                 
@@ -611,11 +608,8 @@
             const topicData = { name, description };
             
             try {
-                const response = await fetch(`${API_BASE}/topics/skill/${skillId}`, {
+                const response = await authManager.authenticatedFetch(`${API_BASE}/topics/skill/${skillId}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(topicData)
                 });
                 
@@ -651,7 +645,7 @@
             if (!topicsToDelete) return;
             
             try {
-                const response = await fetch(`${API_BASE}/topics/${topicsToDelete.id}`, {
+                const response = await authManager.authenticatedFetch(`${API_BASE}/topics/${topicsToDelete.id}`, {
                     method: 'DELETE'
                 });
                 
