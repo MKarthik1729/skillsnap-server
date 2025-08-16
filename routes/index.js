@@ -6,6 +6,7 @@ const skills_routes = require('./skills_routes');
 const topics_routes = require('./topics_routes');
 const page_data_routes = require('./page_data_routes');
 const codes_routes = require('./codes_routes');
+const user_routes = require('./user_routes');
 
 // Define route prefixes
 const API_PREFIX = '/api/v1';
@@ -15,6 +16,7 @@ router.use('/api/v1/skills', skills_routes);
 router.use('/api/v1/topics', topics_routes);
 router.use('/api/v1/page-data', page_data_routes);
 router.use('/api/v1/codes', codes_routes);
+router.use('/api/v1/users', user_routes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -35,7 +37,8 @@ router.get('/api/v1/docs', (req, res) => {
       skills: '/api/v1/skills',
       topics: '/api/v1/topics',
       page_data: '/api/v1/page-data',
-      codes: '/api/v1/codes'
+      codes: '/api/v1/codes',
+      users: '/api/v1/users'
     },
     health_check: '/health',
     documentation: '/api/v1/docs'

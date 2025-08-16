@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const skills_services = require('../services/skills_services');
+const { authenticate_token, require_editor_plus } = require('../db/jwt_authorisation');
 
 // Create a new skill
-router.post('/', async (req, res) => {
+router.post('/', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const result = await skills_services.create_skill(req.body);
     if (result.success) {
@@ -70,7 +71,7 @@ router.get('/:skill_id', async (req, res) => {
 });
 
 // Update skill by ID
-router.put('/:skill_id', async (req, res) => {
+router.put('/:skill_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { skill_id } = req.params;
     const result = await skills_services.update_skill(skill_id, req.body);
@@ -90,7 +91,7 @@ router.put('/:skill_id', async (req, res) => {
 });
 
 // Delete skill by ID
-router.delete('/:skill_id', async (req, res) => {
+router.delete('/:skill_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { skill_id } = req.params;
     const result = await skills_services.delete_skill(skill_id);

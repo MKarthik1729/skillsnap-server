@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const code_services = require('../services/code_services');
+const { authenticate_token, require_editor_plus } = require('../db/jwt_authorisation');
 
 // Create a new code
-router.post('/', async (req, res) => {
+router.post('/', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const result = await code_services.create_code(req.body);
     if (result.success) {
@@ -102,7 +103,7 @@ router.get('/:code_id', async (req, res) => {
 });
 
 // Update code by ID
-router.put('/:code_id', async (req, res) => {
+router.put('/:code_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { code_id } = req.params;
     const result = await code_services.update_code(code_id, req.body);
@@ -122,7 +123,7 @@ router.put('/:code_id', async (req, res) => {
 });
 
 // Soft delete code by ID
-router.delete('/:code_id', async (req, res) => {
+router.delete('/:code_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { code_id } = req.params;
     const result = await code_services.delete_code(code_id);
@@ -142,7 +143,7 @@ router.delete('/:code_id', async (req, res) => {
 });
 
 // Hard delete code by ID (permanent deletion)
-router.delete('/:code_id/permanent', async (req, res) => {
+router.delete('/:code_id/permanent', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { code_id } = req.params;
     const result = await code_services.hard_delete_code(code_id);

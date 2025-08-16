@@ -6,6 +6,7 @@
     <title>Skills Management - SkillsSnap</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="auth.js"></script>
     <style>
         .skill-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -59,6 +60,17 @@
                         <a class="nav-link" href="codes.html">
                             <i class="fas fa-code me-1"></i>Codes
                         </a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link text-light">
+                            <i class="fas fa-user me-1"></i>
+                            <span id="user-info">Loading...</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link btn btn-link text-light" onclick="authManager.logout()" style="border: none; background: none;">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -244,7 +256,7 @@
                     url = `${API_BASE}/skills?title=${encodeURIComponent(currentSearch)}`;
                 }
                 
-                const response = await fetch(url);
+                const response = await authManager.authenticatedFetch(url);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -386,7 +398,7 @@
         // Edit skill
         async function editSkill(skillId) {
             try {
-                const response = await fetch(`${API_BASE}/skills/${skillId}`);
+                const response = await authManager.authenticatedFetch(`${API_BASE}/skills/${skillId}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -422,11 +434,8 @@
                 const url = skillId ? `${API_BASE}/skills/${skillId}` : `${API_BASE}/skills`;
                 const method = skillId ? 'PUT' : 'POST';
                 
-                const response = await fetch(url, {
+                const response = await authManager.authenticatedFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(skillData)
                 });
                 
@@ -457,7 +466,7 @@
             if (!skillsToDelete) return;
             
             try {
-                const response = await fetch(`${API_BASE}/skills/${skillsToDelete.id}`, {
+                const response = await authManager.authenticatedFetch(`${API_BASE}/skills/${skillsToDelete.id}`, {
                     method: 'DELETE'
                 });
                 
@@ -508,6 +517,17 @@
             // Loading is hidden when skills are displayed
         }
 
+        // Display user info
+        function displayUserInfo() {
+            const userData = authManager.getUserData();
+            const userInfoElement = document.getElementById('user-info');
+            if (userData && userData.username) {
+                userInfoElement.textContent = `${userData.username} (${userData.role})`;
+            } else {
+                userInfoElement.textContent = 'User';
+            }
+        }
+
         // Event listeners
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -524,6 +544,11 @@
         document.getElementById('sortSelect').addEventListener('change', function() {
             currentSort = this.value;
             loadSkills();
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            displayUserInfo();
         });
     </script>
 </body>

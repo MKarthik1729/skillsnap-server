@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const topic_services = require('../services/topic_services');
+const { authenticate_token, require_editor_plus } = require('../db/jwt_authorisation');
 
 // Create a new topic
-router.post('/', async (req, res) => {
+router.post('/', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const result = await topic_services.create_topic(req.body);
     
@@ -22,7 +23,7 @@ router.post('/', async (req, res) => {
 });
 
 // Create a topic and associate it with a skill
-router.post('/skill/:skill_id', async (req, res) => {
+router.post('/skill/:skill_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { skill_id } = req.params;
     const result = await topic_services.create_topic_with_skill(req.body, skill_id);
@@ -111,7 +112,7 @@ router.get('/:topic_id', async (req, res) => {
 });
 
 // Update topic by ID
-router.put('/:topic_id', async (req, res) => {
+router.put('/:topic_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { topic_id } = req.params;
     const result = await topic_services.update_topic(topic_id, req.body);
@@ -131,7 +132,7 @@ router.put('/:topic_id', async (req, res) => {
 });
 
 // Delete topic by ID
-router.delete('/:topic_id', async (req, res) => {
+router.delete('/:topic_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { topic_id } = req.params;
     const result = await topic_services.delete_topic(topic_id);
@@ -151,7 +152,7 @@ router.delete('/:topic_id', async (req, res) => {
 });
 
 // Add page data to topic
-router.post('/:topic_id/page-data', async (req, res) => {
+router.post('/:topic_id/page-data', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { topic_id } = req.params;
     const result = await topic_services.add_page_data_to_topic(topic_id, req.body);
@@ -171,7 +172,7 @@ router.post('/:topic_id/page-data', async (req, res) => {
 });
 
 // Add code to topic
-router.post('/:topic_id/codes', async (req, res) => {
+router.post('/:topic_id/codes', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { topic_id } = req.params;
     const result = await topic_services.add_code_to_topic(topic_id, req.body);
@@ -191,7 +192,7 @@ router.post('/:topic_id/codes', async (req, res) => {
 });
 
 // Add existing page data to topic
-router.post('/:topic_id/page-data/:page_data_id', async (req, res) => {
+router.post('/:topic_id/page-data/:page_data_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { topic_id, page_data_id } = req.params;
     const result = await topic_services.add_existing_page_data_to_topic(topic_id, page_data_id);

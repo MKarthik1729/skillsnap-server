@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const page_data_services = require('../services/page_data_services');
+const { authenticate_token, require_editor_plus } = require('../db/jwt_authorisation');
 
 // Create a new page data
-router.post('/', async (req, res) => {
+router.post('/', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const result = await page_data_services.create_page_data(req.body);
     if (result.success) {
@@ -84,7 +85,7 @@ router.get('/:page_data_id', async (req, res) => {
 });
 
 // Update page data by ID
-router.put('/:page_data_id', async (req, res) => {
+router.put('/:page_data_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { page_data_id } = req.params;
     const result = await page_data_services.update_page_data(page_data_id, req.body);
@@ -104,7 +105,7 @@ router.put('/:page_data_id', async (req, res) => {
 });
 
 // Soft delete page data by ID
-router.delete('/:page_data_id', async (req, res) => {
+router.delete('/:page_data_id', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { page_data_id } = req.params;
     const result = await page_data_services.delete_page_data(page_data_id);
@@ -124,7 +125,7 @@ router.delete('/:page_data_id', async (req, res) => {
 });
 
 // Hard delete page data by ID (permanent deletion)
-router.delete('/:page_data_id/permanent', async (req, res) => {
+router.delete('/:page_data_id/permanent', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { page_data_id } = req.params;
     const result = await page_data_services.hard_delete_page_data(page_data_id);
@@ -188,7 +189,7 @@ router.get('/topic/:topic_id', async (req, res) => {
 // Content Management Routes
 
 // Add content to page data
-router.post('/:page_data_id/content', async (req, res) => {
+router.post('/:page_data_id/content', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { page_data_id } = req.params;
     const { content } = req.body;
@@ -217,7 +218,7 @@ router.post('/:page_data_id/content', async (req, res) => {
 });
 
 // Remove content from page data
-router.delete('/:page_data_id/content/:content_index', async (req, res) => {
+router.delete('/:page_data_id/content/:content_index', authenticate_token, require_editor_plus, async (req, res) => {
   try {
     const { page_data_id, content_index } = req.params;
     const index = parseInt(content_index);
