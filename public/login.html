@@ -219,9 +219,12 @@
                             <label for="regPhone" class="form-label">Phone (Optional)</label>
                             <input type="tel" class="form-control" id="regPhone">
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 password-field">
                             <label for="regPassword" class="form-label">Password</label>
                             <input type="password" class="form-control" id="regPassword" required>
+                            <button type="button" class="password-toggle" id="regPasswordToggle" onclick="toggleRegPasswordVisibility()">
+                                <i class="fas fa-eye" id="regPasswordIcon"></i>
+                            </button>
                         </div>
                         <div class="mb-3">
                             <label for="regRole" class="form-label">Role</label>
@@ -454,6 +457,22 @@
                 passwordInput.type = 'password';
                 passwordIcon.classList.remove('fa-eye-slash');
                 passwordIcon.classList.add('fa-eye');
+            }
+        }
+        
+        // Toggle registration password visibility
+        function toggleRegPasswordVisibility() {
+            const regPasswordInput = document.getElementById('regPassword');
+            const regPasswordIcon = document.getElementById('regPasswordIcon');
+            
+            if (regPasswordInput.type === 'password') {
+                regPasswordInput.type = 'text';
+                regPasswordIcon.classList.remove('fa-eye');
+                regPasswordIcon.classList.add('fa-eye-slash');
+            } else {
+                regPasswordInput.type = 'password';
+                regPasswordIcon.classList.remove('fa-eye-slash');
+                regPasswordIcon.classList.add('fa-eye');
             }
         }
     </script>
